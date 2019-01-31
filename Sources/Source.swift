@@ -98,9 +98,10 @@ class TaskCompletionManager<T: TaskCompletionConverterProtocol> {
             }
         }
 
-        let taskRunner = session.dataTask(with: url, completionHandler: completionHandler).taskRunner()
+        let task = session.dataTask(with: url, completionHandler: completionHandler)
+        task.resume()
 
-        tasks[url] = TaskCompletionCollection(taskRunner: taskRunner, completion: item)
+        tasks[url] = TaskCompletionCollection(taskRunner: task.canceller, completion: item)
 
         return result
     }
