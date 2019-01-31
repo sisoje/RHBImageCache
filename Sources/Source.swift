@@ -120,15 +120,15 @@ class ImageTaskCompletionManager: TaskCompletionManager<UIImage> {
     static let shared = ImageTaskCompletionManager(urlSession: .imageCache)
 }
 
-public class ImageCache: GenericCache<URL, UIImage> {
+public class URLImageCache: GenericCache<URL, UIImage> {
     let imageTaskCompletionManager: ImageTaskCompletionManager
     init(imageTaskCompletionManager: ImageTaskCompletionManager) {
         self.imageTaskCompletionManager = imageTaskCompletionManager
     }
 }
 
-public extension ImageCache {
-    static let shared = ImageCache(imageTaskCompletionManager: .shared)
+public extension URLImageCache {
+    static let shared = URLImageCache(imageTaskCompletionManager: .shared)
 
     func cachedImage(url: URL, _ block: @escaping (UIImage?) -> Void) -> DeinitBlock? {
         if let image = self[url] {
@@ -152,7 +152,7 @@ public extension ImageCache {
 }
 
 public extension UIImageView {
-    func setCachedImage(url: URL, imageCache: ImageCache = .shared) -> DeinitBlock? {
+    func setCachedImage(url: URL, imageCache: URLImageCache = .shared) -> DeinitBlock? {
         return imageCache.cachedImage(url: url) { [weak self] image in
             self?.image = image
         }
