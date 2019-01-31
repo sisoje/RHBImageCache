@@ -5,8 +5,8 @@ import RHBFoundation
 extension URLSessionDataTask {
     func taskRunner() -> DeinitBlock {
         resume()
-        return DeinitBlock {
-            self.cancel()
+        return DeinitBlock { [weak self] in
+            self?.cancel()
         }
     }
 }
