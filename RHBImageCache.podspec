@@ -17,4 +17,6 @@ Pod::Spec.new do |s|
     s.swift_version = '4.2'
     s.platforms = { :ios => "10.0", :watchos => "3.0", :tvos => "10.0", :osx => "10.12" }
     s.source_files = 'Sources/**/*'
+
+    s.dependency 'RHBFoundation'
 end
