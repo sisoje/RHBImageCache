@@ -2,15 +2,6 @@ import Foundation
 import UIKit
 import RHBFoundation
 
-extension URLSessionDataTask {
-    func taskRunner() -> DeinitBlock {
-        resume()
-        return DeinitBlock { [weak self] in
-            self?.cancel()
-        }
-    }
-}
-
 extension URLSession {
     static let imageCache: URLSession = {
         let config: URLSessionConfiguration = .default
@@ -18,7 +9,6 @@ extension URLSession {
         return URLSession(configuration: config)
     }()
 }
-
 
 protocol TaskCompletionConverterProtocol {
     associatedtype TP
