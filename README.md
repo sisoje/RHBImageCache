@@ -4,10 +4,16 @@ Caching images from URLs and setting them directly to ```UIImageView```
 
 There is ```UIImageView``` extension so you can make code like this:
 
-{% gist 9f29fe20d89e1c30e0572449692bab74 %}
-           
-You have to keep the ```imageSetter``` reference alive as long as you want given URLimage to be loaded.
+```
+class URLImageTableViewCell: UITableViewCell {
+    @IBOutlet weak var urlImageView: UIImageView!    
+    
+    var urlImageLoader: DeinitBlock?
 
-Once the reference is gone then the task is cancelled and image will not be set to image view.
-
-Only one URL request will be sent even if more images share the same URL!
+    // new task is created, old task cancelled automatically
+    func setImage(url: URL) {
+        urlImageLoader = urlImageView.setCachedImage(url: url)
+    }
+}
+```
+URL requests are grouped by URL and cancelled automatically when needed
