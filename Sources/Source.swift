@@ -10,21 +10,27 @@ extension URLSession {
     }()
 }
 
-protocol TaskCompletionConverterProtocol {
-    associatedtype TP
-    static func completionHandler(_ block: @escaping (TP?, Data?, URLResponse?, Error?) -> Void) -> (Data?, URLResponse?, Error?) -> Void
+protocol CompletionConverterProtocol {
+    associatedtype C
+    func convert(_ block: @escaping (C?, Data?, URLResponse?, Error?) -> Void) -> (Data?, URLResponse?, Error?) -> Void
 }
 
-extension UIImage: TaskCompletionConverterProtocol {
-    static func completionHandler(_ block: @escaping (UIImage?, Data?, URLResponse?, Error?) -> Void) -> (Data?, URLResponse?, Error?) -> Void {
+class ImageCompletionConverter {}
+
+extension ImageCompletionConverter: CompletionConverterProtocol {
+    func convert(_ block: @escaping (UIImage?, Data?, URLResponse?, Error?) -> Void) -> (Data?, URLResponse?, Error?) -> Void {
         return { data, response, error in
             let image: UIImage? = data.map { UIImage(data: $0) } ?? nil
-            IfDebug.yes {
+            IfBlock.debug.yes {
                 print("\(#file) \(#function) \(#line) IMAGE CREATED")
             }
             block(image, data, response, error)
         }
     }
+}
+
+extension ImageCompletionConverter {
+    static let shared = ImageCompletionConverter()
 }
 
 class TaskCompletion<T>: NSObject {
@@ -61,14 +67,17 @@ extension TaskCompletionCollection {
     }
 }
 
-class TaskCompletionManager<T: TaskCompletionConverterProtocol> {
+class TaskCompletionManager<CONVERTER: CompletionConverterProtocol> {
+    typealias OBJECT_TYPE = CONVERTER.C
     let session: URLSession
-    init(urlSession: URLSession) {
+    let converter: CONVERTER
+    init(urlSession: URLSession, converter: CONVERTER) {
         self.session = urlSession
+        self.converter = converter
     }
-    var tasks: [URL: TaskCompletionCollection<T.TP>] = [:]
+    var tasks: [URL: TaskCompletionCollection<OBJECT_TYPE>] = [:]
 
-    func completionHolder(_ url: URL, _ block: @escaping (T.TP?, Data?, URLResponse?, Error?) -> Void) -> DeinitBlock {
+    func completionHolder(_ url: URL, _ block: @escaping (OBJECT_TYPE?, Data?, URLResponse?, Error?) -> Void) -> DeinitBlock {
         let item = TaskCompletion(block: block)
 
         let result = DeinitBlock { [weak self, weak item] in
@@ -87,7 +96,8 @@ class TaskCompletionManager<T: TaskCompletionConverterProtocol> {
             return result
         }
 
-        let completionHandler = T.completionHandler{ [weak self] object, data, response, error in
+
+        let completionHandler = converter.convert { [weak self] object, data, response, error in
             DispatchQueue.main.async {
                 self.map { man in
                     man.tasks[url].map { col in
@@ -99,16 +109,15 @@ class TaskCompletionManager<T: TaskCompletionConverterProtocol> {
         }
 
         let task = session.dataTask(with: url, completionHandler: completionHandler)
-        task.resume()
 
-        tasks[url] = TaskCompletionCollection(taskRunner: task.canceller, completion: item)
+        tasks[url] = TaskCompletionCollection(taskRunner: task.runner, completion: item)
 
         return result
     }
 }
 
-class ImageTaskCompletionManager: TaskCompletionManager<UIImage> {
-    static let shared = ImageTaskCompletionManager(urlSession: .imageCache)
+class ImageTaskCompletionManager: TaskCompletionManager<ImageCompletionConverter> {
+    static let shared = ImageTaskCompletionManager(urlSession: .imageCache, converter: .shared)
 }
 
 public class URLImageCache: GenericCache<URL, UIImage> {
@@ -120,7 +129,9 @@ public class URLImageCache: GenericCache<URL, UIImage> {
 
 public extension URLImageCache {
     static let shared = URLImageCache(imageTaskCompletionManager: .shared)
+}
 
+public extension URLImageCache {
     func cachedImage(url: URL, _ block: @escaping (UIImage?) -> Void) -> DeinitBlock? {
         if let image = self[url] {
             block(image)
@@ -130,7 +141,7 @@ public extension URLImageCache {
             self.map { cache in
                 // in the meanwhile we might already have image in the cache so just keep it and discard the new one
                 let realimage = cache[url] ?? image
-                IfDebug.yes {
+                IfBlock.debug.yes {
                     if let image = image, realimage != image {
                         print("\(#file) \(#function) \(#line) IMAGE DISCARDED")
                     }
