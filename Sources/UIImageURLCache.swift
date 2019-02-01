@@ -22,11 +22,6 @@ public extension UIImageURLCache {
             self.map { cache in
                 // in the meanwhile we might already have image in the cache so just keep it and discard the new one
                 let realimage = cache[url] ?? image
-                IfBlock.debug.yes {
-                    if let image = image, realimage != image {
-                        print("\(#file) \(#function) \(#line) IMAGE DISCARDED")
-                    }
-                }
                 cache[url] = realimage
                 block(realimage)
             }
