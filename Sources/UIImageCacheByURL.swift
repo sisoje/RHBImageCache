@@ -1,18 +1,18 @@
 import UIKit
 import RHBFoundation
 
-public class UIImageURLCache: GenericCache<URL, UIImage> {
+public class UIImageCacheByURL: GenericCacheByURL<UIImage> {
     let imageTaskCompletionManager: UIImageTaskCompletionManager
     init(imageTaskCompletionManager: UIImageTaskCompletionManager) {
         self.imageTaskCompletionManager = imageTaskCompletionManager
     }
 }
 
-public extension UIImageURLCache {
-    static let shared = UIImageURLCache(imageTaskCompletionManager: .shared)
+public extension UIImageCacheByURL {
+    static let shared = UIImageCacheByURL(imageTaskCompletionManager: .shared)
 }
 
-public extension UIImageURLCache {
+public extension UIImageCacheByURL {
     func cachedImage(url: URL, _ block: @escaping (UIImage?) -> Void) -> DeinitBlock? {
         if let image = self[url] {
             block(image)
