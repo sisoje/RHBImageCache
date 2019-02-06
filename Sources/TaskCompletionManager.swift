@@ -35,17 +35,19 @@ extension TaskCompletionCollection {
     }
 }
 
-class TaskCompletionManager<CONVERTER: CompletionConverterProtocol> {
-    typealias OBJECT_TYPE = CONVERTER.C
+open class TaskCompletionManager<T> {
+    typealias ConvertBlockType = (@escaping (T?, Data?, URLResponse?, Error?) -> Void) -> ((Data?, URLResponse?, Error?) -> Void)
     let session: URLSession
-    let converter: CONVERTER
-    init(urlSession: URLSession, converter: CONVERTER) {
+    let convertBlock: ConvertBlockType
+    init(urlSession: URLSession, convertBlock: @escaping ConvertBlockType) {
         self.session = urlSession
-        self.converter = converter
+        self.convertBlock = convertBlock
     }
-    var tasks: [URL: TaskCompletionCollection<OBJECT_TYPE>] = [:]
+    var tasks: [URL: TaskCompletionCollection<T>] = [:]
+}
 
-    func completionHolder(_ url: URL, _ block: @escaping (OBJECT_TYPE?, Data?, URLResponse?, Error?) -> Void) -> DeinitBlock {
+public extension TaskCompletionManager {
+    func managedTask(_ url: URL, _ block: @escaping (T?, Data?, URLResponse?, Error?) -> Void) -> DeinitBlock {
         let item = TaskCompletion(block: block)
 
         let result = DeinitBlock { [weak self, weak item] in
@@ -65,7 +67,7 @@ class TaskCompletionManager<CONVERTER: CompletionConverterProtocol> {
         }
 
 
-        let completionHandler = converter.convert { [weak self] object, data, response, error in
+        let completionHandler = convertBlock { [weak self] object, data, response, error in
             DispatchQueue.main.async {
                 self.map { man in
                     man.tasks[url].map { col in
