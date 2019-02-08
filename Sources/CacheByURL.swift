@@ -1,7 +1,7 @@
 import UIKit
 import RHBFoundation
 
-public class CacheByURL<T: AnyObject>: GenericCache<URL, T> {
+public class CacheByURL<T: AnyObject>: Cache<URL, T> {
     let taskCompletionManager: TaskCompletionManager<T>
     init(taskCompletionManager: TaskCompletionManager<T>) {
         self.taskCompletionManager = taskCompletionManager
