@@ -19,9 +19,10 @@ public extension UIImageView {
         return CacheByURL(taskCompletionManager: completionManager)
     }()
 
-    func setCachedImage(url: URL, imageCache: CacheByURL<UIImage> = imageCache) -> DeinitBlock? {
+    func setCachedImage(url: URL, imageCache: CacheByURL<UIImage> = imageCache, completon: (()->Void)? = nil) -> DeinitBlock? {
         return imageCache.cachedObject(url: url) { [weak self] image in
             self?.image = image
+            completon?()
         }
     }
 }

@@ -8,7 +8,7 @@ There is ```UIImageView``` extension so you can make code like this:
 class URLImageTableViewCell: UITableViewCell {
     @IBOutlet weak var urlImageView: UIImageView!    
     
-    var urlImageLoader: DeinitBlock?
+    var urlImageLoader: Any?
 
     // new task is created, old task cancelled automatically
     func setImage(url: URL) {
