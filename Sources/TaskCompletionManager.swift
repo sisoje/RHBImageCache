@@ -6,18 +6,6 @@ public enum ErrorWithInfo<INFO>: Error {
     case messageWithInfo(String, INFO)
 }
 
-public enum ConversionError<DATA>: Error {
-    case errorData(Error, DATA)
-    case messageData(String, DATA)
-}
-
-public enum DataTaskError: Error {
-    case error(Error)
-    case noData(URLResponse)
-    case noResponse(Data)
-    case empty
-}
-
 public typealias DataTaskCompletionBlock = (Data?, URLResponse?, Error?) -> Void
 public typealias DataTaskData = (Data, URLResponse)
 public typealias DataTaskInfo = (Data?, URLResponse?)
