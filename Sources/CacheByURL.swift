@@ -2,25 +2,23 @@ import UIKit
 import RHBFoundation
 
 public class CacheByURL<T: AnyObject>: Cache<URL, T> {
-    let taskCompletionManager: TaskCompletionManager<T>
-    init(taskCompletionManager: TaskCompletionManager<T>) {
+    let taskCompletionManager: TaskCompletionManager<URL, T>
+    init(taskCompletionManager: TaskCompletionManager<URL, T>) {
         self.taskCompletionManager = taskCompletionManager
     }
 }
 
 public extension CacheByURL {
-    func cachedObject(url: URL, _ block: @escaping (T?) -> Void) -> DeinitBlock? {
+    func cachedObject(url: URL, _ block: @escaping (Result<T, DataTaskError>) -> Void) -> DeinitBlock? {
         if let object = self[url] {
-            block(object)
+            block(.success(object))
             return nil
         }
 
-        return taskCompletionManager.managedTask(url) { [weak self] object, _, _, _ in
+        return taskCompletionManager.managedTask(url) { [weak self] result in
             self.map { cache in
-                // in the meanwhile we might already have object in the cache so just keep it and discard the new one
-                let object = cache[url] ?? object
-                cache[url] = object
-                block(object)
+                cache[url] = try? result.get()
+                block(result)
             }
         }
     }
