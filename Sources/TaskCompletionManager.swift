@@ -1,30 +1,14 @@
 import Foundation
 import RHBFoundation
 
-public enum ErrorWithInfo<INFO>: Error {
-    case errorWithInfo(Error, INFO)
-    case messageWithInfo(String, INFO)
-}
-
 public typealias DataTaskCompletionBlock = (Data?, URLResponse?, Error?) -> Void
-public typealias DataTaskData = (Data, URLResponse)
-public typealias DataTaskInfo = (Data?, URLResponse?)
-public typealias DataTaskError = ErrorWithInfo<DataTaskInfo>
-public typealias DataTaskResult = Result<DataTaskData, DataTaskError>
+public typealias DataTaskData = OptionalPair<Data, URLResponse>
+public typealias DataTaskResult = Result<DataTaskData, Error>
 
 public extension DataTaskResult {
     init(_ data: Data?, _ response: URLResponse?, _ error: Error?) {
-        if let error = error {
-            self = .failure(.errorWithInfo(error, DataTaskInfo(data, response)))
-            return
-        }
-        if let data = data, let response = response {
-            self = .success(DataTaskData(data, response))
-            return
-        }
-        self = .failure(.messageWithInfo("no data or no response", DataTaskInfo(data, response)))
+        self = OptionalPair(OptionalPair(data, response), error).asResult
     }
-
     static func dataTaskCompletionBlock(_ block: @escaping (DataTaskResult)->Void) -> DataTaskCompletionBlock {
         return { data, response, error in
             block(DataTaskResult(data, response, error))
@@ -73,7 +57,7 @@ extension TaskCompletionCollection {
 }
 
 open class TaskCompletionManager<K: Hashable, T> {
-    public typealias RESULT = Result<T, DataTaskError>
+    public typealias RESULT = Result<T, Error>
     let taskRunner: (K, @escaping DataTaskCompletionBlock) -> DeinitBlock
     let dataMapper: (DataTaskData) -> RESULT
     public init(dataMapper: @escaping (DataTaskData) -> RESULT, taskRunner: @escaping (K, @escaping DataTaskCompletionBlock) -> DeinitBlock) {

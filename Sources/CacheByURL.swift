@@ -9,7 +9,7 @@ public class CacheByURL<T: AnyObject>: Cache<URL, T> {
 }
 
 public extension CacheByURL {
-    func cachedObject(url: URL, _ block: @escaping (Result<T, DataTaskError>) -> Void) -> DeinitBlock? {
+    func cachedObject(url: URL, _ block: @escaping (Result<T, Error>) -> Void) -> DeinitBlock? {
         if let object = self[url] {
             block(.success(object))
             return nil
