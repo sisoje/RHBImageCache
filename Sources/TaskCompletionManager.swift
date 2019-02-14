@@ -86,8 +86,12 @@ public extension TaskCompletionManager {
 public extension TaskCompletionManager {
     func managedTask(_ key: K, _ block: @escaping (RESULT) -> Void) -> DeinitBlock {
         let item = TaskCompletion(block: block)
-        let result = DeinitBlock { [weak self] in
-            self?.removeTask(key, item)
+        let result = DeinitBlock { [weak self, weak item] in
+            self.map { s in
+                item.map { i in
+                    s.removeTask(key, i)
+                }
+            }
         }
 
         if let collection = taskCollections[key] {
@@ -96,8 +100,9 @@ public extension TaskCompletionManager {
         }
 
         let completionHandler = DataTaskResult.dataTaskCompletionBlock { [weak self] dataTaskResult in
-            let result = self.map { dataTaskResult.flatMap($0.dataMapper) }
-            result.map { result in
+            self.map {
+                dataTaskResult.flatMap($0.dataMapper)
+            }.map { result in
                 DispatchQueue.main.async {
                     self?.finishTasks(key, result)
                 }
