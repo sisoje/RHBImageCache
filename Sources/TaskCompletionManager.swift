@@ -16,7 +16,14 @@ public extension DataTaskResult {
     }
 }
 
-public class TaskCompletion<RESULT>: NSObject {
+public class TaskCompletion<RESULT>: Hashable {
+    let uuid = UUID()
+    public static func == (lhs: TaskCompletion<RESULT>, rhs: TaskCompletion<RESULT>) -> Bool {
+        return lhs.uuid == rhs.uuid
+    }
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(uuid)
+    }
     let completion: (RESULT) -> Void
     init(block: @escaping (RESULT) -> Void) {
         self.completion = block
