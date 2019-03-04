@@ -18,7 +18,7 @@ Pod::Spec.new do |s|
     s.platforms = { :ios => "10.3", :watchos => "3.0", :tvos => "10.0", :osx => "10.12" }
     s.source_files = 'Sources/**/*'
     s.dependency 'RHBFoundation'
-    s.test_spec 'RHBFoundationTests' do |test_spec|
+    s.test_spec 'RHBImageCacheTests' do |test_spec|
         test_spec.dependency 'RHBFoundationTestUtilities'
         test_spec.requires_app_host = false
         test_spec.source_files = 'Tests/**/*'
