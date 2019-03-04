@@ -7,7 +7,7 @@ public typealias DataTaskResult = Result<DataTaskData, Error>
 
 public extension DataTaskResult {
     init(_ data: Data?, _ response: URLResponse?, _ error: Error?) {
-        self = OptionalPair(OptionalPair(data, response), error).asResult
+        self = Result(OptionalPair(data, response), error)
     }
     static func dataTaskCompletionBlock(_ block: @escaping (DataTaskResult)->Void) -> DataTaskCompletionBlock {
         return { data, response, error in
