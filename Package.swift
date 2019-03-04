@@ -1,10 +1,13 @@
-// swift-tools-version:4.2
+// swift-tools-version:5.0
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
 let package = Package(
     name: "RHBImageCache",
+    platforms: [
+        .macOS(.v10_12), .iOS("10.3"),
+    ],
     products: [
         // Products define the executables and libraries produced by a package, and make them visible to other packages.
         .library(
@@ -21,6 +24,12 @@ let package = Package(
         .target(
             name: "RHBImageCache",
             dependencies: [],
-            path: "Sources")
+            path: "Sources"
+        ),
+        .testTarget(
+            name: "RHBImageCacheTests",
+            dependencies: ["RHBImageCache"],
+            path: "Tests"
+        ),
     ]
 )
