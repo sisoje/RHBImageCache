@@ -1,15 +1,7 @@
 import RHBFoundation
 import RHBImageCache
 import XCTest
-
-extension XCTestExpectation {
-    var fulfiller: DeinitBlock {
-        return DeinitBlock {
-            print("Fulfill \(self.description)")
-            self.fulfill()
-        }
-    }
-}
+import RHBFoundationTestUtilities
 
 extension URLResponse {
     static let dummy = URLResponse(url: URL(fileURLWithPath: ""), mimeType: nil, expectedContentLength: 0, textEncodingName: nil)
